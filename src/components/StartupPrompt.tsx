@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import axios from 'axios';
 
 const PRODUCTION_VARIABLES = [
   "Raw Material",
@@ -117,13 +118,15 @@ const StartupPrompt = () => {
     setCustomUnit("-");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!variable || selectedParams.length === 0 || sampleSize < 1) {
       toast({
         variant: "destructive",
         title: "Incomplete Configuration",
         description: "Please select variable, at least one parameter, and valid sample size.",
       });
+      const response = await axios.get('http://localhost:3000');
+      console.log("Error fetching data:", response.data);
       return;
     }
 
