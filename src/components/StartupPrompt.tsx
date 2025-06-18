@@ -120,13 +120,27 @@ const StartupPrompt = () => {
 
   const handleSubmit = async () => {
     if (!variable || selectedParams.length === 0 || sampleSize < 1) {
-      toast({
-        variant: "destructive",
-        title: "Incomplete Configuration",
-        description: "Please select variable, at least one parameter, and valid sample size.",
-      });
-      const response = await axios.get('http://localhost:3000');
-      console.log("Error fetching data:", response.data);
+      // toast({
+      //   variant: "destructive",
+      //   title: "Incomplete Configuration",
+      //   description: "Please select variable, at least one parameter, and valid sample size.",
+      // });
+      //start
+  try {
+    await axios.get('http://localhost:3000'); // or some specific endpoint
+    toast({
+      variant: "default",
+      title: "server reached",
+      description: "Please complete all fields. Server is online.",
+    });
+  } catch (err) {
+    toast({
+      variant: "destructive",
+      title: "Server Not Reachable",
+      description: "Please check if backend is running.",
+    });
+  }
+      //end
       return;
     }
 

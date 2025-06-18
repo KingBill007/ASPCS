@@ -51,7 +51,6 @@ app.whenReady().then(() => {
     }, 3000);
   } else {
     createWindow();
-    //createLogWindow(); // Opens log viewer on launch in prod
   }
   // ✅ Start backend server in both dev and prod
   const backendPath = isDev

@@ -1,10 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';    
-//import cors from 'cors';
+import cors from 'cors';
 
 const app = express();
 dotenv.config();
+app.use(cors());
 
 const userSchema = new mongoose.Schema({
     name: String,
