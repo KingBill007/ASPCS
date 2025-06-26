@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const isDev = !app.isPackaged;
 let frontendProcess;
+let backendProcess;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -37,6 +38,36 @@ win.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
 });
 }
 
+function startBackend() {
+  // ✅ Start backend server in both dev and prod
+  const backendPath = isDev
+    ? path.join(__dirname, "server.js") // during development, use the local server.js
+    : path.join(process.resourcesPath, "app", "server.js"); // extracted to the filesystem at runtime
+
+  console.log("🟩 Starting backend from:", backendPath);
+
+  if (fs.existsSync(backendPath)) {
+    backendProcess = spawn("node", [backendPath], {
+      shell: true,
+      stdio: ["ignore", "pipe", "pipe"], //runs node server.js in the background
+    });
+    // Log backend output to console
+    backendProcess.stdout.on("data", (data) => {
+      console.log(`[SERVER] ${data.toString()}`);
+    });
+    backendProcess.stderr.on("data", (data) => {
+      console.error(`[SERVER ERROR] ${data.toString()}`);
+    });
+    backendProcess.on("exit", (code) => {
+      console.error(`❌ Backend exited with code ${code}`);
+      console.log("🔁 Restarting backend in 3 seconds...");
+      setTimeout(startBackend, 3000); // Restart backend after 3 seconds
+    });
+  } else {
+    console.error("❌ Backend entry not found at", backendPath);
+  }
+}
+
 app.whenReady().then(() => {
   if (isDev) {
     // Run Vite dev server
@@ -52,23 +83,12 @@ app.whenReady().then(() => {
   } else {
     createWindow();
   }
-  // ✅ Start backend server in both dev and prod
-  const backendPath = isDev
-    ? path.join(__dirname, 'backend', 'index.js')
-    : path.join(process.resourcesPath, 'app', 'backend', 'index.js'); // inside the .asar
-
-  if (fs.existsSync(backendPath)) {
-    backendProcess = spawn('node', [backendPath], {
-      shell: true,
-      stdio: 'inherit',
-    });
-  } else {
-    console.error('❌ Backend entry not found at', backendPath);
-  }
-
+  //start backend
+  startBackend();
 });
 
 app.on('window-all-closed', () => {
   if (frontendProcess) frontendProcess.kill();
+  if (backendProcess) backendProcess.kill();
   app.quit();
 });
